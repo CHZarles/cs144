@@ -2,7 +2,9 @@
 #define SPONGE_LIBSPONGE_BYTE_STREAM_HH
 
 #include <string>
-
+#include <vector>
+#include <iostream>
+using namespace std;
 //! \brief An in-order byte stream.
 
 //! Bytes are written on the "input" side and read from the "output"
@@ -11,6 +13,35 @@
 class ByteStream {
   private:
     // Your code here -- add private members as necessary.
+    vector<char> buffer_;
+    size_t capacity_ , first_data_index_, available_data_index_;
+    size_t bytes_written_;
+    size_t bytes_read_;
+    bool end_input_;
+
+    // 有安全检查
+    // 将一个字节存进buffer
+    bool push(char ch){
+      if( remaining_capacity() == 0)
+        return false; 
+      buffer_[available_data_index_] = ch;
+      available_data_index_ = (available_data_index_ + 1) % capacity_;
+      cout << "In push , available_data_index_: " << available_data_index_ << endl;
+      bytes_written_ += 1;
+      return true;
+    }
+
+    // 有安全检查
+    // 从buffer读出一个字节
+    bool pop(char& ch){
+      if( buffer_empty() )
+        return false;
+      ch = buffer_[first_data_index_];
+      first_data_index_ = (first_data_index_ + 1) % capacity_;
+      cout << "In pop , first_data_index_: " << first_data_index_ << endl;
+      bytes_read_ += 1;
+      return true;
+    }
 
     // Hint: This doesn't need to be a sophisticated data structure at
     // all, but if any of your tests are taking longer than a second,
@@ -19,10 +50,11 @@ class ByteStream {
 
     bool _error{};  //!< Flag indicating that the stream suffered an error.
 
+
   public:
     //! Construct a stream with room for `capacity` bytes.
     ByteStream(const size_t capacity);
-
+  
     //! \name "Input" interface for the writer
     //!@{
 
