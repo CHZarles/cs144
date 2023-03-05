@@ -4,6 +4,7 @@
 #include "byte_stream.hh"
 
 #include <cstdint>
+#include <map>
 #include <string>
 
 //! \brief A class that assembles a series of excerpts from a byte stream (possibly out of order,
@@ -14,6 +15,19 @@ class StreamReassembler {
 
     ByteStream _output;  //!< The reassembled in-order byte stream
     size_t _capacity;    //!< The maximum number of bytes
+
+    size_t used_auxiliary_storage;
+    size_t expected_id;
+    struct message {
+        size_t idx_;
+        size_t expected_next_id_;  // make sure that, messageA -> messageB => messageA.idx_ < messageB.expected_id
+        std::string context_;
+        message(const size_t idx, const size_t expected_next_id, const std::string context)
+            : idx_(idx), expected_next_id_(expected_next_id), context_(context) {}
+    };
+
+    // key(start id): value()
+    std::map<int, message> auxiliary_map;
 
   public:
     //! \brief Construct a `StreamReassembler` that will store up to `capacity` bytes.
@@ -46,6 +60,22 @@ class StreamReassembler {
     //! \brief Is the internal state empty (other than the output stream)?
     //! \returns `true` if no substrings are waiting to be assembled
     bool empty() const;
+
+    void cache_string(const string &context, int index) {
+        size_t msg_expected_id = index + context.size();
+        auto new_context = const_cast<string &>(context);
+        auto vaild_space = _capacity / 2 + _capacity % 2 - used_auxiliary_storage;
+        if (context.size() > vaild_space) {
+            msg_expected_id = index + vaild_space;
+            while (context.size() > vaild_space) {
+                new_context.pop_back();
+            }
+        }
+        std::cout << msg_expected_id;
+        // construct message
+        message value(index, msg_expected_id, context);
+        auxiliary_map.insert({index, value});
+    }
 };
 
 #endif  // SPONGE_LIBSPONGE_STREAM_REASSEMBLER_HH
