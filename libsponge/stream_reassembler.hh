@@ -65,15 +65,14 @@ class StreamReassembler {
         size_t msg_expected_id = index + context.size();
         auto new_context = const_cast<string &>(context);
         auto vaild_space = _capacity / 2 + _capacity % 2 - used_auxiliary_storage;
-        if (context.size() > vaild_space) {
-            msg_expected_id = index + vaild_space;
-            while (context.size() > vaild_space) {
-                new_context.pop_back();
-            }
+        msg_expected_id = index + vaild_space;
+        while (context.size() > vaild_space) {
+            new_context.pop_back();
+            msg_expected_id -= 1;
         }
         std::cout << msg_expected_id;
         // construct message
-        message value(index, msg_expected_id, context);
+        message value(index, msg_expected_id, new_context);
         auxiliary_map.insert({index, value});
     }
 };

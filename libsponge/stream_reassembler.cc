@@ -69,13 +69,13 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
         }
         if (lower_iter != auxiliary_map.begin()) {  // there are some index ..
             lower_iter--;
-            auto &messageA_iter = lower_iter;
-            auto overlap_a = messageA_iter->second.expected_next_id_ - index;
+            auto &less_index_iter = lower_iter;
+            auto overlap_a = less_index_iter->second.expected_next_id_ - index;
             if (overlap_a > 0) {
                 if (overlap_a >= data.size()) {
                     return;
                 } else {
-                    cache_string(data.substr(overlap_a), messageA_iter->second.expected_next_id_);
+                    cache_string(data.substr(overlap_a), less_index_iter->second.expected_next_id_);
                     return;
                 }
             } else {  // 与a无重叠
@@ -88,27 +88,27 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
             return;
         if (data.size() > lower_iter->second.context_.size()) {
             if (upper_iter == auxiliary_map.end()) {
-                auto &message = lower_iter->second;
-                cache_string(data.substr(message.context_.size()), message.expected_next_id_);
+                auto &msg = lower_iter->second;
+                cache_string(data.substr(msg.context_.size()), msg.expected_next_id_);
                 return;
             }
 
             if (upper_iter != auxiliary_map.end()) {
                 // exist overlap
                 if (data.size() + lower_iter->second.expected_next_id_ < upper_iter->second.idx_) {
-                    auto &message = lower_iter->second;
-                    cache_string(data.substr(message.context_.size()), message.expected_next_id_);
+                    auto &msg = lower_iter->second;
+                    cache_string(data.substr(msg.context_.size()), msg.expected_next_id_);
                     return;
                 }
                 if (data.size() + lower_iter->second.expected_next_id_ >= upper_iter->second.idx_) {
-                    auto &message = lower_iter->second;
-                    push_substring(data.substr(message.context_.size()), message.expected_next_id_, eof);
+                    auto &msg = lower_iter->second;
+                    push_substring(data.substr(msg.context_.size()), msg.expected_next_id_, eof);
                 }
             }
         }
     } else if (lower_iter->second.idx_ > index) {
         if (lower_iter == auxiliary_map.begin()) {
-            auto overlap = index + data.size() - lower_iter->second.idx_;
+            int overlap = index + data.size() - lower_iter->second.idx_;
             if (overlap < 0) {
                 cache_string(data, index);
             } else {
@@ -121,9 +121,8 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
             lower_iter--;
             auto &less_index_iter = lower_iter;
             lower_iter++;
-            auto overlap = index + data.size() - lower_iter->second.idx_;
             if (less_index_iter->second.expected_next_id_ <= index) {
-                auto overlap = index + data.size() - lower_iter->second.idx_;
+                int overlap = index + data.size() - lower_iter->second.idx_;
                 if (overlap < 0) {
                     cache_string(data, index);
                 } else {
