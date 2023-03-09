@@ -11,6 +11,10 @@
 class StreamReassembler {
   private:
     // Your code here -- add private members as necessary.
+    size_t used_capcity();
+    size_t remaind_capcity();
+
+    // My code end
 
     ByteStream _output;  //!< The reassembled in-order byte stream
     size_t _capacity;    //!< The maximum number of bytes
